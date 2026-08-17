@@ -1,7 +1,8 @@
 :root {
-  /* Apple Liquid Glass Design System */
+  /* Apple Liquid Glass Design System - Default Light */
   --liquid-glass-bg: rgba(255, 255, 255, 0.45);
   --liquid-group-bg: rgba(255, 255, 255, 0.42);
+  --liquid-subgroup-bg: rgba(255, 255, 255, 0.3);
   --liquid-glass-border: rgba(255, 255, 255, 0.65);
   --liquid-inner-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04);
   --liquid-window-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.14), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
@@ -13,10 +14,13 @@
 
   --accent-color: #0071e3;
   --accent-glow: rgba(0, 113, 227, 0.3);
+  --accent-secondary: rgba(0, 113, 227, 0.1);
   --success-color: #34c759;
   --success-glow: rgba(52, 199, 89, 0.35);
   --warning-color: #ff9500;
   --danger-color: #ff3b30;
+  --danger-glow: rgba(255, 59, 48, 0.25);
+  --danger-bg: rgba(255, 59, 48, 0.1);
 
   --keycap-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 242, 247, 0.75) 100%);
   --keycap-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
@@ -25,10 +29,12 @@
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* System Dark Mode */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --liquid-glass-bg: rgba(28, 28, 32, 0.58);
     --liquid-group-bg: rgba(44, 44, 48, 0.45);
+    --liquid-subgroup-bg: rgba(255, 255, 255, 0.05);
     --liquid-glass-border: rgba(255, 255, 255, 0.16);
     --liquid-inner-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
     --liquid-window-shadow: 0 20px 48px -4px rgba(0, 0, 0, 0.55), 0 4px 14px 0 rgba(0, 0, 0, 0.35);
@@ -40,10 +46,59 @@
 
     --accent-color: #0a84ff;
     --accent-glow: rgba(10, 132, 255, 0.35);
+    --accent-secondary: rgba(10, 132, 255, 0.15);
 
     --keycap-bg: linear-gradient(180deg, rgba(68, 68, 74, 0.85) 0%, rgba(48, 48, 52, 0.75) 100%);
     --keycap-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
+}
+
+/* Explicit Forced Dark Mode */
+html[data-theme="dark"] {
+  --liquid-glass-bg: rgba(28, 28, 32, 0.58);
+  --liquid-group-bg: rgba(44, 44, 48, 0.45);
+  --liquid-subgroup-bg: rgba(255, 255, 255, 0.05);
+  --liquid-glass-border: rgba(255, 255, 255, 0.16);
+  --liquid-inner-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+  --liquid-window-shadow: 0 20px 48px -4px rgba(0, 0, 0, 0.55), 0 4px 14px 0 rgba(0, 0, 0, 0.35);
+  --divider-color: rgba(255, 255, 255, 0.08);
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1a6;
+  --text-tertiary: #636366;
+
+  --accent-color: #0a84ff;
+  --accent-glow: rgba(10, 132, 255, 0.35);
+  --accent-secondary: rgba(10, 132, 255, 0.15);
+
+  --keycap-bg: linear-gradient(180deg, rgba(68, 68, 74, 0.85) 0%, rgba(48, 48, 52, 0.75) 100%);
+  --keycap-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Explicit Forced Light Mode */
+html[data-theme="light"] {
+  --liquid-glass-bg: rgba(255, 255, 255, 0.45);
+  --liquid-group-bg: rgba(255, 255, 255, 0.42);
+  --liquid-subgroup-bg: rgba(255, 255, 255, 0.3);
+  --liquid-glass-border: rgba(255, 255, 255, 0.65);
+  --liquid-inner-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.04);
+  --liquid-window-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.14), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
+  --divider-color: rgba(0, 0, 0, 0.06);
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #98989d;
+
+  --accent-color: #0071e3;
+  --accent-glow: rgba(0, 113, 227, 0.3);
+  --accent-secondary: rgba(0, 113, 227, 0.1);
+  --success-color: #34c759;
+  --success-glow: rgba(52, 199, 89, 0.35);
+  --warning-color: #ff9500;
+  --danger-color: #ff3b30;
+
+  --keycap-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 242, 247, 0.75) 100%);
+  --keycap-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 * {
@@ -56,7 +111,7 @@ html, body {
   background: transparent !important;
   font-family: var(--font-family);
   color: var(--text-primary);
-  width: 300px;
+  width: 320px;
   margin: 0;
   padding: 0;
   user-select: none;
@@ -123,6 +178,34 @@ html, body {
   opacity: 0.8;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--liquid-group-bg);
+  border: 1px solid var(--liquid-glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: var(--liquid-inner-highlight);
+  transition: all 0.2s var(--spring-ease);
+}
+
+.theme-toggle-btn:hover {
+  color: var(--text-primary);
+  transform: scale(1.06);
+  border-color: var(--accent-color);
+}
+
 /* Unified Liquid Group */
 .glass-group {
   background: var(--liquid-group-bg);
@@ -159,6 +242,13 @@ html, body {
   min-width: 0;
 }
 
+.domain-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
 .row-title {
   font-size: 12.5px;
   font-weight: 500;
@@ -179,6 +269,17 @@ html, body {
   text-overflow: ellipsis;
 }
 
+.custom-badge {
+  font-size: 9.5px;
+  font-weight: 600;
+  background: var(--accent-secondary);
+  color: var(--accent-color);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--accent-glow);
+  white-space: nowrap;
+}
+
 /* Status Row */
 .status-row {
   padding: 8px 12px;
@@ -192,7 +293,7 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 190px;
+  max-width: 140px;
 }
 
 .status-pill {
@@ -218,6 +319,11 @@ html, body {
   animation: pulseDot 2s infinite var(--spring-ease);
 }
 
+.status-custom .status-dot {
+  background: var(--accent-color);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
 .status-none .status-dot {
   background: var(--warning-color);
 }
@@ -232,32 +338,61 @@ html, body {
   100% { transform: scale(0.9); opacity: 0.8; }
 }
 
-/* Quick Focus Action Button */
-.glass-action-btn {
-  display: inline-flex;
+.row-actions {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: var(--accent-color);
-  color: #ffffff;
-  border: none;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 9px;
-  border-radius: 7px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: all 0.2s var(--spring-ease);
+  gap: 5px;
   flex-shrink: 0;
 }
 
-.glass-action-btn:hover {
+/* Liquid Glass Buttons */
+.glass-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s var(--spring-ease);
+}
+
+.btn-primary {
+  background: var(--accent-color);
+  color: #ffffff;
+  box-shadow: 0 2px 6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-primary:hover {
   transform: translateY(-0.5px);
   filter: brightness(1.06);
 }
 
-.glass-action-btn:active {
-  transform: scale(0.96);
+.btn-secondary {
+  background: var(--liquid-subgroup-bg);
+  border-color: var(--liquid-glass-border);
+  color: var(--text-primary);
+  box-shadow: var(--liquid-inner-highlight);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-0.5px);
+}
+
+.btn-danger-ghost {
+  background: transparent;
+  color: var(--danger-color);
+  font-size: 10.5px;
+  padding: 3px 6px;
+}
+
+.btn-danger-ghost:hover {
+  background: var(--danger-bg);
 }
 
 /* Shortcut Controls */
@@ -409,6 +544,86 @@ input:checked + .switch-track:before {
   padding: 7px 12px;
 }
 
+/* Theme Segmented Control */
+.segmented-control {
+  display: flex;
+  align-items: center;
+  background: var(--liquid-subgroup-bg);
+  border: 1px solid var(--liquid-glass-border);
+  border-radius: 7px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segment-btn {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 2px 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s var(--spring-ease);
+}
+
+.segment-btn.active {
+  background: var(--liquid-glass-bg);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+/* Saved Items List (Pinned & Disabled) */
+.drawer-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  padding: 6px 12px 2px;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 12px 6px;
+  max-height: 90px;
+  overflow-y: auto;
+}
+
+.saved-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--liquid-subgroup-bg);
+  border: 1px solid var(--liquid-glass-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+}
+
+.saved-item-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.btn-item-remove {
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
 /* Paused Blur Cover */
 .paused-cover {
   position: absolute;
@@ -431,6 +646,14 @@ input:checked + .switch-track:before {
   .paused-cover {
     background: rgba(28, 28, 32, 0.55);
   }
+}
+
+html[data-theme="dark"] .paused-cover {
+  background: rgba(28, 28, 32, 0.55);
+}
+
+html[data-theme="light"] .paused-cover {
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .paused-content {

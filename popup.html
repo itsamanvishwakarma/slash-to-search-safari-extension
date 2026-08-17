@@ -14,33 +14,74 @@
         <img src="images/icon-48.png" alt="Slash Search" class="app-icon">
         <div class="brand-text">
           <span class="app-name">Slash Search</span>
-          <span class="app-version">v1.2</span>
+          <span class="app-version">v1.3</span>
         </div>
       </div>
-      <label class="liquid-switch" title="Master Toggle">
-        <input type="checkbox" id="global-toggle" checked>
-        <span class="switch-track"></span>
-      </label>
+      <div class="header-actions">
+        <!-- Theme Toggle Button -->
+        <button type="button" class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Appearance (System / Light / Dark)">
+          <svg class="theme-icon sun-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="theme-icon moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <!-- Master Liquid Switch -->
+        <label class="liquid-switch" title="Master Toggle">
+          <input type="checkbox" id="global-toggle" checked>
+          <span class="switch-track"></span>
+        </label>
+      </div>
     </header>
 
     <!-- Main Liquid Glass Group -->
     <div class="glass-group" id="main-group">
-      <!-- Live Status Row -->
+      <!-- Status & Target Mapping Row -->
       <div class="glass-row status-row" id="status-row">
         <div class="row-left">
-          <span class="domain-title" id="current-domain">Detecting page...</span>
+          <div class="domain-header">
+            <span class="domain-title" id="current-domain">Detecting page...</span>
+            <span class="custom-badge" id="custom-badge" style="display: none;">Custom Pinned</span>
+          </div>
           <div class="status-pill" id="status-pill">
             <span class="status-dot"></span>
             <span class="status-label" id="status-label">Checking search...</span>
           </div>
         </div>
-        <button type="button" class="glass-action-btn" id="btn-focus-now" title="Focus search bar now" style="display: none;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          Focus
-        </button>
+        <div class="row-actions">
+          <!-- Pick Search Bar Button -->
+          <button type="button" class="glass-btn btn-secondary" id="btn-pick-element" title="Pin custom search bar on this site">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="22" y1="12" x2="18" y2="12"></line>
+              <line x1="6" y1="12" x2="2" y2="12"></line>
+              <line x1="12" y1="6" x2="12" y2="2"></line>
+              <line x1="12" y1="22" x2="12" y2="18"></line>
+            </svg>
+            <span id="pick-btn-label">Pick</span>
+          </button>
+          <!-- Reset Custom Selector Button -->
+          <button type="button" class="glass-btn btn-danger-ghost" id="btn-reset-custom" title="Reset to auto detection" style="display: none;">
+            Reset
+          </button>
+          <!-- Quick Focus Action Button -->
+          <button type="button" class="glass-btn btn-primary" id="btn-focus-now" title="Focus search bar now" style="display: none;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Focus
+          </button>
+        </div>
       </div>
 
       <div class="row-divider"></div>
@@ -76,14 +117,24 @@
 
       <!-- Expandable Preferences Trigger -->
       <div class="glass-row accordion-trigger" id="more-trigger">
-        <span class="row-title subtle">More Preferences</span>
+        <span class="row-title subtle">Preferences & Mappings</span>
         <svg class="chevron" id="more-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
       </div>
 
-      <!-- Hidden Preferences Drawer -->
+      <!-- Hidden Preferences & Mappings Drawer -->
       <div class="preferences-drawer" id="preferences-drawer" style="display: none;">
+        <div class="row-divider"></div>
+        <!-- Appearance Theme Segmented Control -->
+        <div class="glass-row sub-row">
+          <span class="row-subtitle">Theme</span>
+          <div class="segmented-control" id="theme-segmented">
+            <button type="button" class="segment-btn active" data-theme-val="system">Auto</button>
+            <button type="button" class="segment-btn" data-theme-val="light">Light</button>
+            <button type="button" class="segment-btn" data-theme-val="dark">Dark</button>
+          </div>
+        </div>
         <div class="row-divider"></div>
         <div class="glass-row sub-row">
           <span class="row-subtitle">Auto-select search text</span>
@@ -99,6 +150,18 @@
             <input type="checkbox" id="pref-smooth-scroll" checked>
             <span class="switch-track"></span>
           </label>
+        </div>
+        <!-- Pinned Sites List Section -->
+        <div id="pinned-sites-section" style="display: none;">
+          <div class="row-divider"></div>
+          <div class="drawer-section-title">Pinned Search Bars</div>
+          <div class="items-list" id="pinned-sites-list"></div>
+        </div>
+        <!-- Disabled Sites List Section -->
+        <div id="disabled-sites-section" style="display: none;">
+          <div class="row-divider"></div>
+          <div class="drawer-section-title">Paused Websites</div>
+          <div class="items-list" id="disabled-sites-list"></div>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
 (() => {
   "use strict";
 
-  const storage = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync)
-    ? chrome.storage.sync
-    : (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local)
+  const storage = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local)
     ? chrome.storage.local
+    : (typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync)
+    ? chrome.storage.sync
     : null;
 
   const DEFAULT_SETTINGS = {
@@ -12,7 +12,9 @@
     shortcutKey: "/",
     autoSelect: true,
     smoothScroll: true,
-    disabledDomains: []
+    theme: "system",
+    disabledDomains: [],
+    customSelectors: {}
   };
 
   let currentSettings = { ...DEFAULT_SETTINGS };
@@ -22,6 +24,8 @@
     if (storage) {
       storage.get(DEFAULT_SETTINGS, (data) => {
         currentSettings = { ...DEFAULT_SETTINGS, ...data };
+        if (!currentSettings.customSelectors) currentSettings.customSelectors = {};
+        if (!currentSettings.disabledDomains) currentSettings.disabledDomains = [];
       });
     }
   }
@@ -42,10 +46,6 @@
   const EDITABLE_SELECTOR =
     'input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"], [role="searchbox"]';
 
-  /**
-   * Returns true when the given element is an editable field where the user
-   * is likely typing text.
-   */
   function isEditable(el) {
     if (!el) return false;
     if (el.isContentEditable) return true;
@@ -143,6 +143,22 @@
   }
 
   function findSearchField() {
+    // 1. Check custom mapped selector for this website first
+    const host = window.location.hostname.replace(/^www\./, "");
+    const customSelector =
+      currentSettings.customSelectors?.[host] ||
+      currentSettings.customSelectors?.[window.location.hostname];
+
+    if (customSelector) {
+      try {
+        const customEl = document.querySelector(customSelector);
+        if (customEl && isVisible(customEl)) {
+          return customEl;
+        }
+      } catch {}
+    }
+
+    // 2. Automatic Smart Scoring Detection
     const candidates = Array.from(
       document.querySelectorAll(EDITABLE_SELECTOR)
     );
@@ -191,9 +207,7 @@
     ) {
       try {
         field.select();
-      } catch {
-        // Ignore select errors on restricted inputs
-      }
+      } catch {}
     }
 
     return document.activeElement === field;
@@ -250,27 +264,277 @@
     true
   );
 
-  // Runtime message listener (Instant update & status queries)
+  // ==========================================
+  // ELEMENT PICKER / CUSTOM SELECTOR PINNING
+  // ==========================================
+
+  let isPickerActive = false;
+  let pickerHighlightBox = null;
+  let pickerHud = null;
+
+  function generateUniqueSelector(el) {
+    if (!el || !(el instanceof Element)) return "";
+
+    // 1. Unique ID
+    if (el.id && document.querySelectorAll(`#${CSS.escape(el.id)}`).length === 1) {
+      return `#${CSS.escape(el.id)}`;
+    }
+
+    const tag = el.tagName.toLowerCase();
+
+    // 2. Unique Name attribute
+    const name = el.getAttribute("name");
+    if (name) {
+      const sel = `${tag}[name="${CSS.escape(name)}"]`;
+      if (document.querySelectorAll(sel).length === 1) return sel;
+    }
+
+    // 3. Unique placeholder
+    const placeholder = el.getAttribute("placeholder");
+    if (placeholder) {
+      const sel = `${tag}[placeholder="${CSS.escape(placeholder)}"]`;
+      if (document.querySelectorAll(sel).length === 1) return sel;
+    }
+
+    // 4. Unique aria-label
+    const ariaLabel = el.getAttribute("aria-label");
+    if (ariaLabel) {
+      const sel = `${tag}[aria-label="${CSS.escape(ariaLabel)}"]`;
+      if (document.querySelectorAll(sel).length === 1) return sel;
+    }
+
+    // 5. Unique data-testid
+    const testId = el.getAttribute("data-testid");
+    if (testId) {
+      const sel = `[data-testid="${CSS.escape(testId)}"]`;
+      if (document.querySelectorAll(sel).length === 1) return sel;
+    }
+
+    // 6. Build clean path with class/parent
+    let path = [];
+    let current = el;
+    while (current && current.nodeType === Node.ELEMENT_NODE && path.length < 4) {
+      let selector = current.tagName.toLowerCase();
+      if (current.id) {
+        selector = `#${CSS.escape(current.id)}`;
+        path.unshift(selector);
+        break;
+      }
+      if (current.className && typeof current.className === "string") {
+        const classes = current.className
+          .trim()
+          .split(/\s+/)
+          .filter((c) => c && !c.includes(":") && !c.includes("[") && !c.includes("/"))
+          .slice(0, 2);
+        if (classes.length) {
+          selector += "." + classes.map((c) => CSS.escape(c)).join(".");
+        }
+      }
+      path.unshift(selector);
+      current = current.parentElement;
+    }
+
+    const fullPath = path.join(" > ");
+    return fullPath || tag;
+  }
+
+  function startElementPicker() {
+    if (isPickerActive) return;
+    isPickerActive = true;
+
+    // Create Highlight Box
+    pickerHighlightBox = document.createElement("div");
+    pickerHighlightBox.id = "slash-search-picker-box";
+    Object.assign(pickerHighlightBox.style, {
+      position: "fixed",
+      pointerEvents: "none",
+      zIndex: "2147483646",
+      border: "2px solid #0071e3",
+      background: "rgba(0, 113, 227, 0.15)",
+      borderRadius: "6px",
+      boxShadow: "0 0 16px rgba(0, 113, 227, 0.4)",
+      transition: "all 0.08s cubic-bezier(0.16, 1, 0.3, 1)",
+      display: "none"
+    });
+    document.body.appendChild(pickerHighlightBox);
+
+    // Create Apple Liquid Glass HUD Banner
+    pickerHud = document.createElement("div");
+    pickerHud.id = "slash-search-picker-hud";
+    Object.assign(pickerHud.style, {
+      position: "fixed",
+      top: "16px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: "2147483647",
+      background: "rgba(30, 30, 34, 0.85)",
+      backdropFilter: "blur(24px)",
+      WebkitBackdropFilter: "blur(24px)",
+      color: "#ffffff",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+      fontSize: "13px",
+      fontWeight: "500",
+      padding: "10px 18px",
+      borderRadius: "9999px",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.2)",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      border: "1px solid rgba(255,255,255,0.15)",
+      cursor: "default",
+      userSelect: "none"
+    });
+
+    pickerHud.innerHTML = `
+      <span style="font-size: 15px;">🎯</span>
+      <span>Click any search box or input to pin it for this site</span>
+      <span style="font-size: 11px; opacity: 0.7; background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 5px;">Esc to cancel</span>
+    `;
+    document.body.appendChild(pickerHud);
+
+    // Event Listeners for Picker
+    window.addEventListener("mousemove", handlePickerMouseMove, true);
+    window.addEventListener("click", handlePickerClick, true);
+    window.addEventListener("keydown", handlePickerKeyDown, true);
+  }
+
+  function handlePickerMouseMove(e) {
+    if (!isPickerActive || !pickerHighlightBox) return;
+
+    // Get element under cursor
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    if (!target || target === pickerHud || pickerHud.contains(target) || target === pickerHighlightBox) {
+      return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    Object.assign(pickerHighlightBox.style, {
+      display: "block",
+      top: `${rect.top}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`
+    });
+  }
+
+  function handlePickerClick(e) {
+    if (!isPickerActive) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    if (target && target !== pickerHud && !pickerHud.contains(target)) {
+      const selector = generateUniqueSelector(target);
+      const host = window.location.hostname.replace(/^www\./, "");
+
+      // Save custom selector to storage
+      currentSettings.customSelectors = currentSettings.customSelectors || {};
+      currentSettings.customSelectors[host] = selector;
+
+      if (storage) {
+        storage.set({ customSelectors: currentSettings.customSelectors });
+      }
+
+      showToast(`🎯 Pinned search bar for ${host}! (${selector})`);
+      target.focus();
+    }
+
+    stopElementPicker();
+  }
+
+  function handlePickerKeyDown(e) {
+    if (!isPickerActive) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      stopElementPicker();
+      showToast("Picker cancelled");
+    }
+  }
+
+  function stopElementPicker() {
+    isPickerActive = false;
+    if (pickerHighlightBox) {
+      pickerHighlightBox.remove();
+      pickerHighlightBox = null;
+    }
+    if (pickerHud) {
+      pickerHud.remove();
+      pickerHud = null;
+    }
+    window.removeEventListener("mousemove", handlePickerMouseMove, true);
+    window.removeEventListener("click", handlePickerClick, true);
+    window.removeEventListener("keydown", handlePickerKeyDown, true);
+  }
+
+  function showToast(message) {
+    const toast = document.createElement("div");
+    Object.assign(toast.style, {
+      position: "fixed",
+      bottom: "24px",
+      left: "50%",
+      transform: "translateX(-50%) translateY(20px)",
+      zIndex: "2147483647",
+      background: "rgba(20, 20, 24, 0.88)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      color: "#ffffff",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif",
+      fontSize: "13px",
+      fontWeight: "500",
+      padding: "9px 18px",
+      borderRadius: "9999px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)",
+      border: "1px solid rgba(255,255,255,0.15)",
+      opacity: "0",
+      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+      pointerEvents: "none"
+    });
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateX(-50%) translateY(0)";
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(-50%) translateY(20px)";
+      setTimeout(() => toast.remove(), 350);
+    }, 2800);
+  }
+
+  // Runtime message listener
   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      // Instant settings update without needing page reload
       if (request.action === "UPDATE_SETTINGS" && request.settings) {
         currentSettings = { ...DEFAULT_SETTINGS, ...request.settings };
         sendResponse({ success: true });
         return true;
       }
 
+      if (request.action === "START_ELEMENT_PICKER") {
+        startElementPicker();
+        sendResponse({ success: true });
+        return true;
+      }
+
       if (request.action === "GET_SEARCH_STATUS") {
         const field = findSearchField();
+        const host = window.location.hostname.replace(/^www\./, "");
+        const hasCustom = Boolean(currentSettings.customSelectors?.[host]);
+
         if (field) {
           sendResponse({
             found: true,
+            isCustom: hasCustom,
             tag: field.tagName.toLowerCase(),
             placeholder: field.getAttribute("placeholder") || "",
             id: field.id || ""
           });
         } else {
-          sendResponse({ found: false });
+          sendResponse({ found: false, isCustom: hasCustom });
         }
         return true;
       }

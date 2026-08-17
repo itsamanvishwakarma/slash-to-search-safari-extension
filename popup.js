@@ -1,10 +1,11 @@
 (() => {
   "use strict";
 
-  const storage = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync)
-    ? chrome.storage.sync
-    : (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local)
+  // Use chrome.storage.local as reliable local database for all persistent settings
+  const storage = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local)
     ? chrome.storage.local
+    : (typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync)
+    ? chrome.storage.sync
     : null;
 
   const DEFAULT_SETTINGS = {
@@ -12,7 +13,9 @@
     shortcutKey: "/",
     autoSelect: true,
     smoothScroll: true,
-    disabledDomains: []
+    theme: "system",
+    disabledDomains: [],
+    customSelectors: {}
   };
 
   let currentSettings = { ...DEFAULT_SETTINGS };
@@ -24,35 +27,50 @@
   const globalToggle = document.getElementById("global-toggle");
   const pausedCover = document.getElementById("paused-cover");
   const currentDomainEl = document.getElementById("current-domain");
-  const statusRow = document.getElementById("status-row");
+  const customBadge = document.getElementById("custom-badge");
   const statusPill = document.getElementById("status-pill");
   const statusLabel = document.getElementById("status-label");
+  const btnPickElement = document.getElementById("btn-pick-element");
+  const pickBtnLabel = document.getElementById("pick-btn-label");
+  const btnResetCustom = document.getElementById("btn-reset-custom");
   const btnFocusNow = document.getElementById("btn-focus-now");
   const siteToggle = document.getElementById("site-toggle");
   const shortcutBtn = document.getElementById("shortcut-btn");
   const shortcutDisplay = document.getElementById("shortcut-display");
   const shortcutSub = document.getElementById("shortcut-sub");
   const btnResetShortcut = document.getElementById("btn-reset-shortcut");
+  const btnThemeToggle = document.getElementById("btn-theme-toggle");
+  const sunIcon = btnThemeToggle.querySelector(".sun-icon");
+  const moonIcon = btnThemeToggle.querySelector(".moon-icon");
+  const themeSegmented = document.getElementById("theme-segmented");
   const prefAutoSelect = document.getElementById("pref-auto-select");
   const prefSmoothScroll = document.getElementById("pref-smooth-scroll");
   const moreTrigger = document.getElementById("more-trigger");
   const preferencesDrawer = document.getElementById("preferences-drawer");
+  const pinnedSitesSection = document.getElementById("pinned-sites-section");
+  const pinnedSitesList = document.getElementById("pinned-sites-list");
+  const disabledSitesSection = document.getElementById("disabled-sites-section");
+  const disabledSitesList = document.getElementById("disabled-sites-list");
 
-  // Load Settings from Storage
+  // Load Settings from Local Database
   async function loadSettings() {
     return new Promise((resolve) => {
       if (!storage) {
+        applyTheme(DEFAULT_SETTINGS.theme);
         resolve(DEFAULT_SETTINGS);
         return;
       }
       storage.get(DEFAULT_SETTINGS, (data) => {
         currentSettings = { ...DEFAULT_SETTINGS, ...data };
+        if (!currentSettings.customSelectors) currentSettings.customSelectors = {};
+        if (!currentSettings.disabledDomains) currentSettings.disabledDomains = [];
+        applyTheme(currentSettings.theme);
         resolve(currentSettings);
       });
     });
   }
 
-  // Save Settings & Broadcast Instantly to Open Tabs (No reload required!)
+  // Save Settings to Local Database & Broadcast Instantly to Open Tabs
   function saveAndBroadcastSettings(callback) {
     if (storage) {
       storage.set(currentSettings, () => {
@@ -60,7 +78,7 @@
       });
     }
 
-    // Broadcast directly to active tab so changes take effect instantly with 0ms delay
+    // Broadcast directly to tabs so changes apply with 0ms delay
     if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.query) {
       chrome.tabs.query({}, (tabs) => {
         if (tabs && tabs.length) {
@@ -70,15 +88,46 @@
                 action: "UPDATE_SETTINGS",
                 settings: currentSettings
               }, () => {
-                if (chrome.runtime.lastError) {
-                  // Silent catch for browser special pages
-                }
+                if (chrome.runtime.lastError) {}
               });
             }
           });
         }
       });
     }
+  }
+
+  // Theme Management (System, Light, Dark)
+  function applyTheme(theme) {
+    if (theme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      sunIcon.style.display = "block";
+      moonIcon.style.display = "none";
+    } else if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+      sunIcon.style.display = "none";
+      moonIcon.style.display = "block";
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      const isSystemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      sunIcon.style.display = isSystemDark ? "none" : "block";
+      moonIcon.style.display = isSystemDark ? "block" : "none";
+    }
+
+    // Update segmented control buttons
+    if (themeSegmented) {
+      const btns = themeSegmented.querySelectorAll(".segment-btn");
+      btns.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.themeVal === theme);
+      });
+    }
+  }
+
+  function cycleTheme() {
+    const nextTheme = currentSettings.theme === "system" ? "dark" : currentSettings.theme === "dark" ? "light" : "system";
+    currentSettings.theme = nextTheme;
+    applyTheme(nextTheme);
+    saveAndBroadcastSettings();
   }
 
   // Initialize Active Tab
@@ -102,6 +151,7 @@
               currentDomain = "";
               currentDomainEl.textContent = "Safari System Page";
               siteToggle.disabled = true;
+              btnPickElement.disabled = true;
             }
           } catch {
             currentDomain = "";
@@ -130,6 +180,21 @@
       return;
     }
 
+    // Check if custom pinned selector exists for this domain
+    const hasCustom = Boolean(currentSettings.customSelectors && currentSettings.customSelectors[currentDomain]);
+    if (hasCustom) {
+      customBadge.style.display = "inline-block";
+      btnResetCustom.style.display = "inline-flex";
+      pickBtnLabel.textContent = "Re-pick";
+      setStatus("custom", "Custom search pinned");
+      btnFocusNow.style.display = "inline-flex";
+      return;
+    } else {
+      customBadge.style.display = "none";
+      btnResetCustom.style.display = "none";
+      pickBtnLabel.textContent = "Pick";
+    }
+
     statusLabel.textContent = "Checking search...";
     statusPill.className = "status-pill";
 
@@ -154,6 +219,9 @@
     if (state === "found") {
       statusPill.classList.add("status-found");
       statusLabel.textContent = label;
+    } else if (state === "custom") {
+      statusPill.classList.add("status-custom");
+      statusLabel.textContent = label;
     } else if (state === "disabled") {
       statusPill.classList.add("status-disabled");
       statusLabel.textContent = label;
@@ -165,7 +233,75 @@
     }
   }
 
-  // Render UI
+  // Render Saved Items in Drawer (Pinned & Disabled)
+  function renderSavedItems() {
+    // 1. Pinned Selectors List
+    const customEntries = Object.entries(currentSettings.customSelectors || {});
+    if (customEntries.length > 0) {
+      pinnedSitesSection.style.display = "block";
+      pinnedSitesList.innerHTML = "";
+      customEntries.forEach(([domain, selector]) => {
+        const row = document.createElement("div");
+        row.className = "saved-item-row";
+
+        const name = document.createElement("span");
+        name.className = "saved-item-name";
+        name.textContent = `${domain}: ${selector}`;
+        name.title = `${domain} -> ${selector}`;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn-item-remove";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.title = `Remove custom mapping for ${domain}`;
+        removeBtn.addEventListener("click", () => {
+          delete currentSettings.customSelectors[domain];
+          saveAndBroadcastSettings(() => {
+            renderUI();
+          });
+        });
+
+        row.appendChild(name);
+        row.appendChild(removeBtn);
+        pinnedSitesList.appendChild(row);
+      });
+    } else {
+      pinnedSitesSection.style.display = "none";
+    }
+
+    // 2. Disabled Domains List
+    const disabledList = currentSettings.disabledDomains || [];
+    if (disabledList.length > 0) {
+      disabledSitesSection.style.display = "block";
+      disabledSitesList.innerHTML = "";
+      disabledList.forEach((domain) => {
+        const row = document.createElement("div");
+        row.className = "saved-item-row";
+
+        const name = document.createElement("span");
+        name.className = "saved-item-name";
+        name.textContent = domain;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn-item-remove";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.title = `Re-enable on ${domain}`;
+        removeBtn.addEventListener("click", () => {
+          currentSettings.disabledDomains = currentSettings.disabledDomains.filter((d) => d !== domain);
+          saveAndBroadcastSettings(() => {
+            renderUI();
+          });
+        });
+
+        row.appendChild(name);
+        row.appendChild(removeBtn);
+        disabledSitesList.appendChild(row);
+      });
+    } else {
+      disabledSitesSection.style.display = "none";
+    }
+  }
+
+  // Render Full UI
   function renderUI() {
     globalToggle.checked = currentSettings.globalEnabled;
     pausedCover.style.display = currentSettings.globalEnabled ? "none" : "flex";
@@ -179,11 +315,30 @@
     prefAutoSelect.checked = currentSettings.autoSelect !== false;
     prefSmoothScroll.checked = currentSettings.smoothScroll !== false;
 
+    applyTheme(currentSettings.theme || "system");
+    renderSavedItems();
     checkLiveStatus();
   }
 
-  // Event Listeners
+  // Attach Event Listeners
   function attachListeners() {
+    // Header Theme Toggle Button
+    btnThemeToggle.addEventListener("click", () => {
+      cycleTheme();
+    });
+
+    // Theme Segmented Control
+    if (themeSegmented) {
+      themeSegmented.addEventListener("click", (e) => {
+        const btn = e.target.closest(".segment-btn");
+        if (!btn) return;
+        const themeVal = btn.dataset.themeVal;
+        currentSettings.theme = themeVal;
+        applyTheme(themeVal);
+        saveAndBroadcastSettings();
+      });
+    }
+
     // Global Master Switch
     globalToggle.addEventListener("change", () => {
       currentSettings.globalEnabled = globalToggle.checked;
@@ -205,6 +360,23 @@
       }
 
       currentSettings.disabledDomains = Array.from(list);
+      saveAndBroadcastSettings(() => {
+        renderUI();
+      });
+    });
+
+    // Start Element Picker
+    btnPickElement.addEventListener("click", () => {
+      if (!currentTab) return;
+      chrome.tabs.sendMessage(currentTab.id, { action: "START_ELEMENT_PICKER" }, () => {
+        window.close(); // Close popup so user can click element on webpage
+      });
+    });
+
+    // Reset Custom Selector for Current Domain
+    btnResetCustom.addEventListener("click", () => {
+      if (!currentDomain || !currentSettings.customSelectors) return;
+      delete currentSettings.customSelectors[currentDomain];
       saveAndBroadcastSettings(() => {
         renderUI();
       });
