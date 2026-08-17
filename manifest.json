@@ -1,8 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Slash Search",
-  "version": "1.1.0",
-  "description": "Press / to instantly focus the search bar on any website. Works like GitHub, YouTube, and other pro tools.",
+  "version": "1.2.0",
+  "description": "Press / to instantly focus the search bar on any website. Fully customizable with live status and site toggles.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "images/icon-48.png",
+      "96": "images/icon-96.png",
+      "128": "images/icon-128.png",
+      "256": "images/icon-256.png",
+      "512": "images/icon-512.png"
+    }
+  },
   "content_scripts": [
     {
       "matches": [

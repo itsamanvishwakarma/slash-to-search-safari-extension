@@ -1,6 +1,41 @@
 (() => {
   "use strict";
 
+  const storage = (typeof chrome !== "undefined" && chrome.storage && chrome.storage.sync)
+    ? chrome.storage.sync
+    : (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local)
+    ? chrome.storage.local
+    : null;
+
+  const DEFAULT_SETTINGS = {
+    globalEnabled: true,
+    shortcutKey: "/",
+    autoSelect: true,
+    smoothScroll: true,
+    disabledDomains: []
+  };
+
+  let currentSettings = { ...DEFAULT_SETTINGS };
+
+  // Load and sync settings
+  function loadSettings() {
+    if (storage) {
+      storage.get(DEFAULT_SETTINGS, (data) => {
+        currentSettings = { ...DEFAULT_SETTINGS, ...data };
+      });
+    }
+  }
+
+  if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener((changes) => {
+      for (const key of Object.keys(changes)) {
+        currentSettings[key] = changes[key].newValue;
+      }
+    });
+  }
+
+  loadSettings();
+
   const EDITABLE_SELECTOR =
     'input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"], [role="searchbox"]';
 
@@ -96,7 +131,7 @@
       if (parentTag === "NAV" || parentTag === "HEADER") score += 15;
     }
 
-    // Check nearby text for search-related words (limited to avoid perf issues).
+    // Check nearby text for search-related words.
     const parentText = (el.parentElement?.textContent || "").slice(0, 200).toLowerCase();
     if (/\bsearch\b/.test(parentText)) score += 20;
 
@@ -127,36 +162,6 @@
     return bestScore > 0 ? best : null;
   }
 
-  function focusSearchField() {
-    const field = findSearchField();
-    if (!field) return false;
-
-    try {
-      field.focus({ preventScroll: false });
-    } catch {
-      field.focus();
-    }
-
-    // Scroll the field into view if it's off-screen.
-    if (!isInViewport(field)) {
-      field.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    // Select existing text only for a normal text/search input.
-    if (
-      field instanceof HTMLInputElement ||
-      field instanceof HTMLTextAreaElement
-    ) {
-      try {
-        field.select();
-      } catch {
-        // Some input types (e.g. email in some browsers) throw on select().
-      }
-    }
-
-    return document.activeElement === field;
-  }
-
   function isInViewport(el) {
     const rect = el.getBoundingClientRect();
     return (
@@ -167,23 +172,78 @@
     );
   }
 
+  function focusSearchField() {
+    const field = findSearchField();
+    if (!field) return false;
+
+    try {
+      field.focus({ preventScroll: false });
+    } catch {
+      field.focus();
+    }
+
+    // Scroll the field into view if off-screen (and enabled in preferences).
+    if (currentSettings.smoothScroll !== false && !isInViewport(field)) {
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // Select existing text if enabled in preferences.
+    if (
+      currentSettings.autoSelect !== false &&
+      (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)
+    ) {
+      try {
+        field.select();
+      } catch {
+        // Some input types throw on select()
+      }
+    }
+
+    return document.activeElement === field;
+  }
+
+  function isShortcutMatch(event) {
+    const shortcut = currentSettings.shortcutKey || "/";
+
+    if (shortcut.toLowerCase() === "space") {
+      return event.key === " " || event.code === "Space";
+    }
+
+    // Case-insensitive key comparison
+    return event.key.toLowerCase() === shortcut.toLowerCase();
+  }
+
+  // Keydown listener
   document.addEventListener(
     "keydown",
     (event) => {
-      if (event.key !== "/") return;
+      // Check global master enabled switch
+      if (currentSettings.globalEnabled === false) return;
 
-      // Keep "/" normal inside text-entry controls and when modified.
+      // Check per-site blacklist
+      const currentHost = window.location.hostname;
+      if (
+        currentSettings.disabledDomains &&
+        currentSettings.disabledDomains.includes(currentHost)
+      ) {
+        return;
+      }
+
+      // Check shortcut match
+      if (!isShortcutMatch(event)) return;
+
+      // Keep shortcut normal inside text-entry controls and when modifiers are pressed
       if (
         event.ctrlKey ||
         event.metaKey ||
         event.altKey ||
-        event.shiftKey ||
+        (event.shiftKey && currentSettings.shortcutKey !== "?") ||
         isEditable(event.target)
       ) {
         return;
       }
 
-      // Ignore if another script already handled the event.
+      // Ignore if another script already handled the event
       if (event.defaultPrevented) return;
 
       if (focusSearchField()) {
@@ -193,4 +253,30 @@
     },
     true
   );
+
+  // Runtime message listener (for popup queries & triggers)
+  if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === "GET_SEARCH_STATUS") {
+        const field = findSearchField();
+        if (field) {
+          sendResponse({
+            found: true,
+            tag: field.tagName.toLowerCase(),
+            placeholder: field.getAttribute("placeholder") || "",
+            id: field.id || ""
+          });
+        } else {
+          sendResponse({ found: false });
+        }
+        return true;
+      }
+
+      if (request.action === "TRIGGER_FOCUS") {
+        const success = focusSearchField();
+        sendResponse({ success });
+        return true;
+      }
+    });
+  }
 })();
