@@ -1,5 +1,5 @@
 :root {
-  /* Apple Liquid Glass Design System - Default Light */
+  /* Apple Liquid Glass Design System - Clean Static Colors */
   --liquid-glass-bg: rgba(255, 255, 255, 0.45);
   --liquid-group-bg: rgba(255, 255, 255, 0.42);
   --liquid-subgroup-bg: rgba(255, 255, 255, 0.3);
@@ -12,15 +12,25 @@
   --text-secondary: #6e6e73;
   --text-tertiary: #98989d;
 
+  /* Static Apple Accent Colors */
   --accent-color: #0071e3;
-  --accent-glow: rgba(0, 113, 227, 0.3);
-  --accent-secondary: rgba(0, 113, 227, 0.1);
+  --accent-bg: rgba(0, 113, 227, 0.12);
+  --accent-border: rgba(0, 113, 227, 0.25);
+
   --success-color: #34c759;
-  --success-glow: rgba(52, 199, 89, 0.35);
+  --success-text: #248a3d;
+  --success-bg: rgba(52, 199, 89, 0.12);
+  --success-border: rgba(52, 199, 89, 0.25);
+
   --warning-color: #ff9500;
+  --warning-text: #c97000;
+  --warning-bg: rgba(255, 149, 0, 0.12);
+  --warning-border: rgba(255, 149, 0, 0.25);
+
   --danger-color: #ff3b30;
-  --danger-glow: rgba(255, 59, 48, 0.25);
-  --danger-bg: rgba(255, 59, 48, 0.1);
+  --danger-text: #d70015;
+  --danger-bg: rgba(255, 59, 48, 0.12);
+  --danger-border: rgba(255, 59, 48, 0.25);
 
   --keycap-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 242, 247, 0.75) 100%);
   --keycap-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
@@ -45,8 +55,23 @@
     --text-tertiary: #636366;
 
     --accent-color: #0a84ff;
-    --accent-glow: rgba(10, 132, 255, 0.35);
-    --accent-secondary: rgba(10, 132, 255, 0.15);
+    --accent-bg: rgba(10, 132, 255, 0.16);
+    --accent-border: rgba(10, 132, 255, 0.3);
+
+    --success-color: #30d158;
+    --success-text: #30d158;
+    --success-bg: rgba(48, 209, 88, 0.16);
+    --success-border: rgba(48, 209, 88, 0.3);
+
+    --warning-color: #ff9f0a;
+    --warning-text: #ff9f0a;
+    --warning-bg: rgba(255, 159, 10, 0.16);
+    --warning-border: rgba(255, 159, 10, 0.3);
+
+    --danger-color: #ff453a;
+    --danger-text: #ff453a;
+    --danger-bg: rgba(255, 69, 58, 0.16);
+    --danger-border: rgba(255, 69, 58, 0.3);
 
     --keycap-bg: linear-gradient(180deg, rgba(68, 68, 74, 0.85) 0%, rgba(48, 48, 52, 0.75) 100%);
     --keycap-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -68,8 +93,23 @@ html[data-theme="dark"] {
   --text-tertiary: #636366;
 
   --accent-color: #0a84ff;
-  --accent-glow: rgba(10, 132, 255, 0.35);
-  --accent-secondary: rgba(10, 132, 255, 0.15);
+  --accent-bg: rgba(10, 132, 255, 0.16);
+  --accent-border: rgba(10, 132, 255, 0.3);
+
+  --success-color: #30d158;
+  --success-text: #30d158;
+  --success-bg: rgba(48, 209, 88, 0.16);
+  --success-border: rgba(48, 209, 88, 0.3);
+
+  --warning-color: #ff9f0a;
+  --warning-text: #ff9f0a;
+  --warning-bg: rgba(255, 159, 10, 0.16);
+  --warning-border: rgba(255, 159, 10, 0.3);
+
+  --danger-color: #ff453a;
+  --danger-text: #ff453a;
+  --danger-bg: rgba(255, 69, 58, 0.16);
+  --danger-border: rgba(255, 69, 58, 0.3);
 
   --keycap-bg: linear-gradient(180deg, rgba(68, 68, 74, 0.85) 0%, rgba(48, 48, 52, 0.75) 100%);
   --keycap-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -90,12 +130,23 @@ html[data-theme="light"] {
   --text-tertiary: #98989d;
 
   --accent-color: #0071e3;
-  --accent-glow: rgba(0, 113, 227, 0.3);
-  --accent-secondary: rgba(0, 113, 227, 0.1);
+  --accent-bg: rgba(0, 113, 227, 0.12);
+  --accent-border: rgba(0, 113, 227, 0.25);
+
   --success-color: #34c759;
-  --success-glow: rgba(52, 199, 89, 0.35);
+  --success-text: #248a3d;
+  --success-bg: rgba(52, 199, 89, 0.12);
+  --success-border: rgba(52, 199, 89, 0.25);
+
   --warning-color: #ff9500;
+  --warning-text: #c97000;
+  --warning-bg: rgba(255, 149, 0, 0.12);
+  --warning-border: rgba(255, 149, 0, 0.25);
+
   --danger-color: #ff3b30;
+  --danger-text: #d70015;
+  --danger-bg: rgba(255, 59, 48, 0.12);
+  --danger-border: rgba(255, 59, 48, 0.25);
 
   --keycap-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 242, 247, 0.75) 100%);
   --keycap-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
@@ -197,12 +248,11 @@ html, body {
   color: var(--text-secondary);
   cursor: pointer;
   box-shadow: var(--liquid-inner-highlight);
-  transition: all 0.2s var(--spring-ease);
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .theme-toggle-btn:hover {
   color: var(--text-primary);
-  transform: scale(1.06);
   border-color: var(--accent-color);
 }
 
@@ -217,7 +267,6 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.25s var(--spring-ease);
 }
 
 .glass-row {
@@ -269,14 +318,15 @@ html, body {
   text-overflow: ellipsis;
 }
 
+/* Static Blue Custom Pinned Badge */
 .custom-badge {
   font-size: 9.5px;
   font-weight: 600;
-  background: var(--accent-secondary);
+  background: var(--accent-bg);
   color: var(--accent-color);
-  padding: 1px 5px;
+  border: 1px solid var(--accent-border);
+  padding: 1px 6px;
   border-radius: 4px;
-  border: 1px solid var(--accent-glow);
   white-space: nowrap;
 }
 
@@ -305,37 +355,45 @@ html, body {
   color: var(--text-secondary);
 }
 
+/* Static Color Dots */
 .status-dot {
   width: 6.5px;
   height: 6.5px;
   border-radius: 50%;
   background: var(--text-tertiary);
-  transition: all 0.25s ease;
+  flex-shrink: 0;
 }
 
+/* Static Green when Ready/Found */
 .status-found .status-dot {
   background: var(--success-color);
-  box-shadow: 0 0 6px var(--success-glow);
-  animation: pulseDot 2s infinite var(--spring-ease);
+}
+.status-found .status-label {
+  color: var(--success-text);
 }
 
+/* Static Blue when Custom Pinned */
 .status-custom .status-dot {
   background: var(--accent-color);
-  box-shadow: 0 0 6px var(--accent-glow);
+}
+.status-custom .status-label {
+  color: var(--accent-color);
 }
 
+/* Static Orange when No Search Found */
 .status-none .status-dot {
   background: var(--warning-color);
 }
+.status-none .status-label {
+  color: var(--warning-text);
+}
 
+/* Static Red when Disabled/Paused */
 .status-disabled .status-dot {
   background: var(--danger-color);
 }
-
-@keyframes pulseDot {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.8; }
+.status-disabled .status-label {
+  color: var(--danger-text);
 }
 
 .row-actions {
@@ -345,7 +403,7 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Liquid Glass Buttons */
+/* Clean Glass Action Buttons */
 .glass-btn {
   display: inline-flex;
   align-items: center;
@@ -357,18 +415,16 @@ html, body {
   border-radius: 7px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s var(--spring-ease);
+  transition: all 0.15s ease;
 }
 
 .btn-primary {
   background: var(--accent-color);
   color: #ffffff;
-  box-shadow: 0 2px 6px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary:hover {
-  transform: translateY(-0.5px);
-  filter: brightness(1.06);
+  filter: brightness(1.08);
 }
 
 .btn-secondary {
@@ -381,7 +437,6 @@ html, body {
 .btn-secondary:hover {
   border-color: var(--accent-color);
   color: var(--accent-color);
-  transform: translateY(-0.5px);
 }
 
 .btn-danger-ghost {
@@ -419,25 +474,17 @@ html, body {
   font-weight: 700;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s var(--spring-ease);
+  transition: all 0.15s ease;
 }
 
 .liquid-keycap:hover {
-  transform: translateY(-0.5px);
   border-color: var(--accent-color);
 }
 
 .liquid-keycap.recording {
   border-color: var(--accent-color);
-  background: var(--accent-glow);
+  background: var(--accent-bg);
   color: var(--accent-color);
-  animation: keyGlow 1.2s infinite;
-}
-
-@keyframes keyGlow {
-  0% { transform: scale(1); box-shadow: 0 0 2px var(--accent-glow); }
-  50% { transform: scale(1.05); box-shadow: 0 0 10px var(--accent-glow); }
-  100% { transform: scale(1); box-shadow: 0 0 2px var(--accent-glow); }
 }
 
 .reset-link {
@@ -449,14 +496,13 @@ html, body {
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: opacity 0.15s ease;
 }
 
 .reset-link:hover {
   opacity: 0.8;
 }
 
-/* Liquid Switch */
+/* Static Apple Liquid Switch */
 .liquid-switch {
   position: relative;
   display: inline-block;
@@ -486,7 +532,7 @@ html, body {
   background-color: rgba(120, 120, 128, 0.22);
   border-radius: 9999px;
   border: 1px solid var(--liquid-glass-border);
-  transition: all 0.28s var(--spring-ease);
+  transition: background-color 0.22s ease;
 }
 
 .switch-track:before {
@@ -499,7 +545,7 @@ html, body {
   background: #ffffff;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transition: all 0.28s var(--spring-ease);
+  transition: transform 0.22s var(--spring-ease);
 }
 
 .liquid-switch.mini .switch-track:before {
@@ -507,9 +553,10 @@ html, body {
   width: 15px;
 }
 
+/* Static Solid Green Toggled State (No Glow) */
 input:checked + .switch-track {
   background-color: var(--success-color);
-  box-shadow: 0 0 8px var(--success-glow);
+  border-color: transparent;
 }
 
 input:checked + .switch-track:before {
@@ -528,7 +575,7 @@ input:checked + .switch-track:before {
 
 .chevron {
   color: var(--text-tertiary);
-  transition: transform 0.25s var(--spring-ease);
+  transition: transform 0.2s ease;
 }
 
 .accordion-trigger.open .chevron {
@@ -565,7 +612,7 @@ input:checked + .switch-track:before {
   padding: 2px 7px;
   border-radius: 5px;
   cursor: pointer;
-  transition: all 0.15s var(--spring-ease);
+  transition: all 0.15s ease;
 }
 
 .segment-btn.active {
@@ -575,7 +622,7 @@ input:checked + .switch-track:before {
   font-weight: 600;
 }
 
-/* Saved Items List (Pinned & Disabled) */
+/* Saved Items List */
 .drawer-section-title {
   font-size: 10px;
   font-weight: 600;
@@ -639,7 +686,6 @@ input:checked + .switch-track:before {
   align-items: center;
   justify-content: center;
   z-index: 10;
-  animation: fadeIn 0.2s ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -677,9 +723,4 @@ html[data-theme="light"] .paused-cover {
 .paused-subtitle {
   font-size: 11px;
   color: var(--text-secondary);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
