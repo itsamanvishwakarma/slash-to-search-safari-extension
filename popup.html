@@ -3,132 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Slash Search Settings</title>
+  <title>Slash Search</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div class="popup-container">
+  <div class="glass-window">
     <!-- Header -->
-    <header class="header">
+    <header class="glass-header">
       <div class="brand">
-        <img src="images/icon-48.png" alt="Slash Search Icon" class="logo">
-        <div>
-          <h1 class="title">Slash Search</h1>
-          <span class="version">v1.2.0</span>
+        <img src="images/icon-48.png" alt="Slash Search" class="app-icon">
+        <div class="brand-text">
+          <span class="app-name">Slash Search</span>
+          <span class="app-version">v1.2</span>
         </div>
       </div>
-      <div class="global-toggle-wrapper">
-        <label class="switch" title="Global On/Off Switch">
-          <input type="checkbox" id="global-toggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
+      <label class="liquid-switch" title="Master Toggle">
+        <input type="checkbox" id="global-toggle" checked>
+        <span class="switch-track"></span>
+      </label>
     </header>
 
-    <!-- Main Content -->
-    <main class="content" id="main-content">
-      <!-- Live Page Status Card -->
-      <section class="card status-card" id="status-card">
-        <div class="status-header">
-          <span class="domain-label" id="current-domain">Detecting page...</span>
-          <div class="status-indicator" id="status-indicator">
+    <!-- Main Liquid Glass Group -->
+    <div class="glass-group" id="main-group">
+      <!-- Live Status Row -->
+      <div class="glass-row status-row" id="status-row">
+        <div class="row-left">
+          <span class="domain-title" id="current-domain">Detecting page...</span>
+          <div class="status-pill" id="status-pill">
             <span class="status-dot"></span>
-            <span class="status-text" id="status-text">Checking search bar...</span>
+            <span class="status-label" id="status-label">Checking search...</span>
           </div>
         </div>
-        <div class="status-details" id="status-details" style="display: none;">
-          <div class="detected-info" id="detected-info"></div>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-test-focus">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            Focus Search Bar
-          </button>
-        </div>
-      </section>
-
-      <!-- Site Setting Toggle Card -->
-      <section class="card setting-card">
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-title">Enable on this site</span>
-            <span class="setting-desc" id="site-toggle-desc">Toggle for active domain</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="site-toggle" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-      </section>
-
-      <!-- Shortcut Configuration Card -->
-      <section class="card setting-card">
-        <div class="section-title">Activation Shortcut</div>
-        <div class="shortcut-container">
-          <div class="shortcut-recorder-wrapper">
-            <button type="button" class="shortcut-badge" id="shortcut-btn" title="Click to change shortcut">
-              <span class="key-label" id="shortcut-display">/</span>
-            </button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-shortcut" title="Reset to default '/'">
-              Reset
-            </button>
-          </div>
-          <p class="helper-text" id="shortcut-helper">Click the key above, then press your desired key on your keyboard.</p>
-        </div>
-      </section>
-
-      <!-- Behavior Preferences Card -->
-      <section class="card setting-card">
-        <div class="section-title">Preferences</div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-title">Auto-select existing text</span>
-            <span class="setting-desc">Highlight existing search query on focus</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="pref-auto-select" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="divider"></div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-title">Smooth scroll to search</span>
-            <span class="setting-desc">Scroll search bar into view if off-screen</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="pref-smooth-scroll" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-      </section>
-
-      <!-- Disabled Sites Manager (Collapsible) -->
-      <section class="card setting-card">
-        <div class="accordion-header" id="accordion-disabled-sites">
-          <div class="setting-info">
-            <span class="setting-title">Disabled Websites</span>
-            <span class="setting-desc" id="disabled-count-desc">0 sites paused</span>
-          </div>
-          <svg class="chevron-icon" id="disabled-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
+        <button type="button" class="glass-action-btn" id="btn-focus-now" title="Focus search bar now" style="display: none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-        </div>
-        <div class="accordion-body" id="disabled-sites-list-container" style="display: none;">
-          <ul class="disabled-list" id="disabled-sites-list">
-            <li class="empty-list-item">No sites currently disabled.</li>
-          </ul>
-        </div>
-      </section>
-    </main>
+          Focus
+        </button>
+      </div>
 
-    <!-- Global Off State Overlay -->
-    <div class="disabled-overlay" id="disabled-overlay" style="display: none;">
-      <div class="disabled-message">
-        <span class="pause-icon">⏸</span>
-        <h3>Slash Search is Paused</h3>
-        <p>Turn on the master switch above to re-enable keyboard search.</p>
+      <div class="row-divider"></div>
+
+      <!-- Shortcut Key Row -->
+      <div class="glass-row">
+        <div class="row-left">
+          <span class="row-title">Shortcut Key</span>
+          <span class="row-subtitle" id="shortcut-sub">Press key to trigger</span>
+        </div>
+        <div class="shortcut-controls">
+          <button type="button" class="liquid-keycap" id="shortcut-btn" title="Click to record new key">
+            <span id="shortcut-display">/</span>
+          </button>
+          <button type="button" class="reset-link" id="btn-reset-shortcut" title="Reset to /">Reset</button>
+        </div>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <!-- Site Toggle Row -->
+      <div class="glass-row">
+        <div class="row-left">
+          <span class="row-title">Enable on this site</span>
+        </div>
+        <label class="liquid-switch">
+          <input type="checkbox" id="site-toggle" checked>
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <!-- Expandable Preferences Trigger -->
+      <div class="glass-row accordion-trigger" id="more-trigger">
+        <span class="row-title subtle">More Preferences</span>
+        <svg class="chevron" id="more-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+
+      <!-- Hidden Preferences Drawer -->
+      <div class="preferences-drawer" id="preferences-drawer" style="display: none;">
+        <div class="row-divider"></div>
+        <div class="glass-row sub-row">
+          <span class="row-subtitle">Auto-select search text</span>
+          <label class="liquid-switch mini">
+            <input type="checkbox" id="pref-auto-select" checked>
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="row-divider"></div>
+        <div class="glass-row sub-row">
+          <span class="row-subtitle">Smooth scroll to search</span>
+          <label class="liquid-switch mini">
+            <input type="checkbox" id="pref-smooth-scroll" checked>
+            <span class="switch-track"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paused State Blur Cover -->
+    <div class="paused-cover" id="paused-cover" style="display: none;">
+      <div class="paused-content">
+        <div class="paused-icon">⏸</div>
+        <span class="paused-title">Slash Search Paused</span>
+        <span class="paused-subtitle">Toggle master switch to resume</span>
       </div>
     </div>
   </div>

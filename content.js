@@ -17,7 +17,7 @@
 
   let currentSettings = { ...DEFAULT_SETTINGS };
 
-  // Load and sync settings
+  // Load and sync settings from storage
   function loadSettings() {
     if (storage) {
       storage.get(DEFAULT_SETTINGS, (data) => {
@@ -26,10 +26,13 @@
     }
   }
 
+  // Live storage change listener
   if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) {
     chrome.storage.onChanged.addListener((changes) => {
       for (const key of Object.keys(changes)) {
-        currentSettings[key] = changes[key].newValue;
+        if (changes[key] && changes[key].newValue !== undefined) {
+          currentSettings[key] = changes[key].newValue;
+        }
       }
     });
   }
@@ -41,9 +44,7 @@
 
   /**
    * Returns true when the given element is an editable field where the user
-   * is likely typing text. We check `contenteditable` both as an attribute
-   * (for elements without a `matches` implementation or before upgrade)
-   * and via `isContentEditable` (covers inherited contenteditable).
+   * is likely typing text.
    */
   function isEditable(el) {
     if (!el) return false;
@@ -71,7 +72,7 @@
     const tag = el.tagName;
     const type = (el.getAttribute("type") || "").toLowerCase();
 
-    // Skip non-text input types entirely — buttons, checkboxes, etc.
+    // Skip non-text input types entirely
     if (
       tag === "INPUT" &&
       type &&
@@ -95,23 +96,23 @@
 
     let score = 0;
 
-    // Strongest signal: native search input.
+    // Native search input
     if (type === "search") score += 100;
 
-    // role="searchbox" is an explicit ARIA signal.
+    // role="searchbox"
     if (el.getAttribute("role") === "searchbox") score += 90;
 
-    // Common search-related attributes.
+    // Common search attributes
     if (/\bsearch\b/.test(attrs)) score += 80;
     if (/\b(query|find|keyword|keywords|q)\b/.test(attrs)) score += 45;
 
-    // Search-like autocomplete.
+    // Search autocomplete
     if (el.getAttribute("autocomplete") === "search") score += 60;
 
-    // Prefer inputs over textareas/contenteditable fallbacks.
+    // Prefer inputs over textareas
     if (tag === "INPUT") score += 10;
 
-    // Penalize things that are obviously not page search.
+    // Penalize non-search fields
     if (
       /\b(email|password|tel|phone|address|username|user|login|signup|register|credit|card|cvv|ssn|zip|postal)\b/.test(
         attrs
@@ -120,10 +121,9 @@
       score -= 200;
     }
 
-    // Penalize hidden-by-type inputs that slipped through.
     if (type === "hidden") return -Infinity;
 
-    // Inputs near common search UI containers/labels.
+    // Containers
     const parent = el.closest("form, nav, header, [role='search']");
     if (parent) {
       if (parent.getAttribute("role") === "search") score += 70;
@@ -131,11 +131,11 @@
       if (parentTag === "NAV" || parentTag === "HEADER") score += 15;
     }
 
-    // Check nearby text for search-related words.
+    // Nearby text
     const parentText = (el.parentElement?.textContent || "").slice(0, 200).toLowerCase();
     if (/\bsearch\b/.test(parentText)) score += 20;
 
-    // Prefer elements higher up the page (likely the main search bar).
+    // Top of page preference
     const rect = el.getBoundingClientRect();
     if (rect.top < 300) score += 10;
 
@@ -158,7 +158,6 @@
       }
     }
 
-    // Only return if we have some positive signal it's a search field.
     return bestScore > 0 ? best : null;
   }
 
@@ -182,12 +181,10 @@
       field.focus();
     }
 
-    // Scroll the field into view if off-screen (and enabled in preferences).
     if (currentSettings.smoothScroll !== false && !isInViewport(field)) {
       field.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    // Select existing text if enabled in preferences.
     if (
       currentSettings.autoSelect !== false &&
       (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)
@@ -195,7 +192,7 @@
       try {
         field.select();
       } catch {
-        // Some input types throw on select()
+        // Ignore select errors on restricted inputs
       }
     }
 
@@ -203,13 +200,12 @@
   }
 
   function isShortcutMatch(event) {
-    const shortcut = currentSettings.shortcutKey || "/";
+    const shortcut = (currentSettings.shortcutKey || "/").trim();
 
     if (shortcut.toLowerCase() === "space") {
       return event.key === " " || event.code === "Space";
     }
 
-    // Case-insensitive key comparison
     return event.key.toLowerCase() === shortcut.toLowerCase();
   }
 
@@ -217,22 +213,23 @@
   document.addEventListener(
     "keydown",
     (event) => {
-      // Check global master enabled switch
+      // 1. Check master global toggle
       if (currentSettings.globalEnabled === false) return;
 
-      // Check per-site blacklist
-      const currentHost = window.location.hostname;
+      // 2. Check per-site blacklist
+      const currentHost = window.location.hostname.replace(/^www\./, "");
       if (
         currentSettings.disabledDomains &&
-        currentSettings.disabledDomains.includes(currentHost)
+        (currentSettings.disabledDomains.includes(currentHost) ||
+         currentSettings.disabledDomains.includes(window.location.hostname))
       ) {
         return;
       }
 
-      // Check shortcut match
+      // 3. Check shortcut key
       if (!isShortcutMatch(event)) return;
 
-      // Keep shortcut normal inside text-entry controls and when modifiers are pressed
+      // 4. Ignore inside inputs or when modifiers are pressed
       if (
         event.ctrlKey ||
         event.metaKey ||
@@ -243,7 +240,6 @@
         return;
       }
 
-      // Ignore if another script already handled the event
       if (event.defaultPrevented) return;
 
       if (focusSearchField()) {
@@ -254,9 +250,16 @@
     true
   );
 
-  // Runtime message listener (for popup queries & triggers)
+  // Runtime message listener (Instant update & status queries)
   if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      // Instant settings update without needing page reload
+      if (request.action === "UPDATE_SETTINGS" && request.settings) {
+        currentSettings = { ...DEFAULT_SETTINGS, ...request.settings };
+        sendResponse({ success: true });
+        return true;
+      }
+
       if (request.action === "GET_SEARCH_STATUS") {
         const field = findSearchField();
         if (field) {
