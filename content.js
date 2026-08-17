@@ -70,7 +70,7 @@
     }
   }
 
-  // Deep Shadow DOM Querying (crucial for Reddit, YouTube, modern Web Components)
+  // Deep Shadow DOM Querying (works dynamically across all modern Web Component sites)
   function querySelectorAllDeep(selector, root = document) {
     const results = [];
     try {
@@ -170,11 +170,11 @@
     if (type === "hidden") return -Infinity;
 
     // Containers
-    const parent = el.closest ? el.closest("form, nav, header, [role='search'], reddit-search-large, shreddit-search-bar") : null;
+    const parent = el.closest ? el.closest("form, nav, header, [role='search'], [role='combobox'], [class*='search'], [id*='search']") : null;
     if (parent) {
       if (parent.getAttribute && parent.getAttribute("role") === "search") score += 70;
       const parentTag = parent.tagName;
-      if (parentTag === "NAV" || parentTag === "HEADER" || parentTag.includes("SEARCH")) score += 30;
+      if (parentTag === "NAV" || parentTag === "HEADER" || (parent.className && typeof parent.className === "string" && parent.className.toLowerCase().includes("search"))) score += 30;
     }
 
     // Nearby text
@@ -249,7 +249,7 @@
 
     try {
       field.focus({ preventScroll: false });
-      // Dispatch click/focus to open custom search overlays (e.g. Reddit search dropdown)
+      // Dispatch click/focus events to activate any custom dropdowns or search overlays
       field.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
       field.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
       field.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
@@ -336,7 +336,7 @@
   let pickerHighlightBox = null;
   let pickerHud = null;
 
-  // Deep element resolution from screen coordinates (pierces Shadow DOM on Reddit)
+  // Deep element resolution from screen coordinates (pierces Shadow DOM recursively)
   function getDeepElementFromPoint(x, y) {
     let el = document.elementFromPoint(x, y);
     while (el && el.shadowRoot) {
@@ -394,7 +394,7 @@
       if (querySelectorDeep(sel)) return sel;
     }
 
-    // 6. Host Web Component + Tag (e.g. shreddit-search-bar input, reddit-search-large input)
+    // 6. Host Web Component + Tag (for Web Components / Custom Elements)
     let parent = el.parentElement || (el.getRootNode && el.getRootNode().host);
     while (parent && parent !== document.body) {
       const parentTag = parent.tagName?.toLowerCase();
@@ -467,7 +467,7 @@
     `;
     document.documentElement.appendChild(pickerHud);
 
-    // Capture phase listeners so SPA routers / Reddit handlers don't swallow events
+    // Capture phase listeners so SPA routers / single-page apps don't swallow events
     window.addEventListener("mousemove", handlePickerMouseMove, true);
     window.addEventListener("pointerdown", handlePickerPointerDown, true);
     window.addEventListener("mousedown", handlePickerPointerDown, true);
