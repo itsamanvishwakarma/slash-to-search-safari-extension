@@ -367,10 +367,11 @@
 
     // Start Element Picker
     btnPickElement.addEventListener("click", () => {
-      if (!currentTab) return;
+      if (!currentTab || !currentTab.id) return;
       chrome.tabs.sendMessage(currentTab.id, { action: "START_ELEMENT_PICKER" }, () => {
-        window.close(); // Close popup so user can click element on webpage
+        window.close();
       });
+      setTimeout(() => window.close(), 120);
     });
 
     // Reset Custom Selector for Current Domain
